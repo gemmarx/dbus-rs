@@ -135,6 +135,7 @@ extern "C" {
     pub fn dbus_bus_remove_match(conn: *mut DBusConnection, rule: *const c_char,
         error: *mut DBusError);
 
+    pub fn dbus_connection_open_private(address: *const c_char, error: *mut DBusError) -> *mut DBusConnection;
     pub fn dbus_connection_close(conn: *mut DBusConnection);
     pub fn dbus_connection_dispatch(conn: *mut DBusConnection) -> DBusDispatchStatus;
     pub fn dbus_connection_flush(conn: *mut DBusConnection);

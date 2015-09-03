@@ -10,6 +10,7 @@
 extern crate libc;
 
 pub use ffi::DBusBusType as BusType;
+pub use ffi::DBusConnection as BusConnection;
 pub use ffi::DBusNameFlag as NameFlag;
 pub use ffi::DBusRequestNameReply as RequestNameReply;
 pub use ffi::DBusReleaseNameReply as ReleaseNameReply;
@@ -206,10 +207,7 @@ impl Connection {
         self.i.conn.get()
     }
 
-    /// Creates a new D-Bus connection.
-    pub fn get_private(bus: BusType) -> Result<Connection, Error> {
-        let mut e = Error::empty();
-        let conn = unsafe { ffi::dbus_bus_get_private(bus, e.get_mut()) };
+    fn init_connection(conn: *mut BusConnection, e: Error) -> Result<Connection, Error> {
         if conn == ptr::null_mut() {
             return Err(e)
         }
@@ -221,6 +219,21 @@ impl Connection {
             ffi::dbus_connection_add_filter(c.conn(), Some(filter_message_cb as ffi::DBusCallback), std::mem::transmute(&*c.i), None)
         } != 0);
         Ok(c)
+    }
+
+    /// Creates a new D-Bus connection.
+    pub fn get_private(bus: BusType) -> Result<Connection, Error> {
+        let mut e = Error::empty();
+        let conn = unsafe { ffi::dbus_bus_get_private(bus, e.get_mut()) };
+        Connection::init_connection(conn, e)
+    }
+
+    /// Creates a new D-Bus connection with address.
+    pub fn open_private(addr: &str) -> Result<Connection, Error> {
+        let mut e = Error::empty();
+        let a = to_c_str(addr).as_ptr();
+        let conn = unsafe { ffi::dbus_connection_open_private(a, e.get_mut()) };
+        Connection::init_connection(conn, e)
     }
 
     /// Sends a message over the D-Bus and waits for a reply.
