@@ -16,7 +16,7 @@ pub use ffi::DBusRequestNameReply as RequestNameReply;
 pub use ffi::DBusReleaseNameReply as ReleaseNameReply;
 pub use ffi::DBusMessageType as MessageType;
 
-pub use message::{Message, MessageItem, FromMessageItem, OwnedFd, ArrayError};
+pub use message::{Message, MessageItem, FromMessageItem, OwnedFd, OPath, ArrayError};
 pub use prop::PropHandler;
 pub use prop::Props;
 
@@ -250,7 +250,7 @@ impl Connection {
         Ok(message::message_from_ptr(response, false))
     }
 
-    /// Sends a message over the D-Bus without waiting. Useful for sending replies to a method call.
+    /// Sends a message over the D-Bus without waiting. Useful for sending signals and method call replies.
     pub fn send(&self, msg: Message) -> Result<u32,()> {
         let mut serial = 0u32;
         let r = unsafe { ffi::dbus_connection_send(self.conn(), message::get_message_ptr(&msg), &mut serial) };
